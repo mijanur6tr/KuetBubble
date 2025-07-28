@@ -2,7 +2,6 @@ import UserModel from "@/models/User.models";
 import connectDb from "@/lib/dbConnect";
 
 
-
 export async function POST(request:Request){
     await connectDb();
     try {
