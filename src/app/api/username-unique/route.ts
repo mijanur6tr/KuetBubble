@@ -1,6 +1,6 @@
 import UserModel from "@/models/User.models";
 import connectDb from "@/lib/dbConnect";
-import z, { success } from "zod";
+import z from "zod";
 import { usernameValidation } from "@/schemas/signUpSchema";
 
 
@@ -20,17 +20,13 @@ export async function GET(request: Request) {
         const result = usernameQuerySchema.safeParse(queryParams)
         console.log(result)
 
-        if (!result.success) {
-            const usernameError = result.error.format().username?._error || ""
-            return Response.json(
-                {
-                    success: false,
-                    message: usernameError.length>0 ? usernameError.join(', '): "Promlem in username validation... : invalid query parameters"
-            },
-                {
-                    status: 400
-                })
-        }
+  if (!result.success) {
+  const usernameError = result.error.format().username?._errors || [];
+  return Response.json({
+    success: false,
+    message: usernameError[0] || "Problem in username validation"
+  }, { status: 400 });
+}
 
         const {username} = result.data;
 
@@ -39,9 +35,9 @@ export async function GET(request: Request) {
             isVerified:true,
         })
 
-        if(!existedverifiedUser){
+        if(existedverifiedUser){
             return Response.json({
-                success:false,message:"Verified user with this username does not exist"
+                success:false,message:"username has already taken"
             },{status:400})
         }
 

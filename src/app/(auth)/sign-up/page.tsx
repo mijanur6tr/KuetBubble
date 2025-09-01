@@ -26,7 +26,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'
 import { signUpSchema } from '@/schemas/signUpSchema';
-import { ApiError } from 'next/dist/server/api-utils';
 import { useRouter } from 'next/navigation';
 
 
@@ -73,20 +72,25 @@ export default function SingUp() {
         checkUsername();
     }, [debouncedUsername]);
 
-    const Submit = (data: z.infer<typeof signUpSchema>) => {
+    const Submit =async (data: z.infer<typeof signUpSchema>) => {
         setIsSubmiting(true);
         try {
-            const response = axios.post<ApiResponse>("/api/sign-up", data)
+            const response =await axios.post<ApiResponse>("/api/sign-up", data)
             if(response.data.success){
                 toast.success("Registered Successfully! Verification code sent to your email")
+               router.replace(`/verify/${data.username}`) 
+            }else{
+                console.log(response.data.message)
+                toast.error(response.data.message)
             }
-            router.replace("/verify/&{username}")
+            
             setIsSubmiting(false);
         } catch (error) {
-            console.log("error in sign up",error)
-            toast.error("Failed to register")
-            setIsSubmiting(false)
-        }
+  const axiosError = error as AxiosError<ApiResponse>;
+  toast.error(axiosError.response?.data.message ?? "Failed to register");
+  setIsSubmiting(false);
+}
+
     }
 
 
@@ -102,36 +106,37 @@ export default function SingUp() {
 
                 <Form {...form} >
                     <form onSubmit={form.handleSubmit(Submit)} className='space-y-6'>
-                        <FormField
-                            name='username'
-                            control={form.control}
-                            render={
-                                ({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Username</FormLabel>
+                   <FormField
+  name="username"
+  control={form.control}
+  render={({ field, fieldState }) => (
+    <FormItem>
+      <FormLabel>Username</FormLabel>
+      <Input
+        {...field}
+        onChange={(e) => {
+          field.onChange(e);
+          setUsername(e.target.value);
+        }}
+      />
+      <div className="flex items-center gap-2 mt-1">
+        {fieldState.error ? (
+          <p className="text-red-500 text-sm">{fieldState.error.message}</p>
+        ) : isCheckingUsername ? (
+          <Loader2 className="animate-spin" />
+        ) : (
+          usernameMessage && (
+            <p className={`text-sm ${usernameMessage === "Username is unique" ? "text-green-500" : "text-red-500"}`}>
+              {usernameMessage}
+            </p>
+          )
+        )}
+      </div>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 
-                                        <Input
-                                            {...field}
-                                            onChange={
-                                                (e) => {
-                                                    field.onChange(e);
-                                                    setUsername(e.target.value)
-                                                }
-                                            }
-                                        />
-                                        {isCheckingUsername && <Loader2 className="animate-spin" />}
-                                        {isCheckingUsername && usernameMessage && (<p
-                                            className={`text-sm ${usernameMessage === 'Username is unique'
-                                                ? 'text-green-500'
-                                                : 'text-red-500'
-                                                }`}
-                                        >{usernameMessage}</p>)}
-
-                                        <FormMessage />
-                                    </FormItem>
-                                )
-                            }
-                        />
 
                         <FormField
                             name='email'
@@ -140,7 +145,7 @@ export default function SingUp() {
                                 ({ field }) => (
                                     <FormItem>
                                         <FormLabel className='mt-2'>Email</FormLabel>
-                                        <Input {...field} name="email" />
+                                        <Input {...field} type="email" />
                                         <p className=' text-gray-400 mb-2 text-sm'>We will send you a verification code</p>
                                         <FormMessage />
                                     </FormItem>
@@ -155,7 +160,7 @@ export default function SingUp() {
                                 ({ field }) => (
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
-                                        <Input {...field} name='password' />
+                                        <Input {...field} type='password' />
                                         <FormMessage />
                                     </FormItem>
                                 )
