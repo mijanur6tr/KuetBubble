@@ -2,11 +2,9 @@ import connectDb from "@/lib/dbConnect";
 import UserModel from "@/models/User.models";
 import { authOptions } from "../auth/[...nextauth]/options";
 import { getServerSession } from "next-auth";
-import {User} from "next-auth"
-import { messageSchema } from "@/schemas/messageSchema";
-import { success } from "zod";
+import mongoose from "mongoose";
 
-//making post request to chang the isAcceptingMessage field 
+//making post request to change the isAcceptingMessage field 
 export async function POST(request:Request){
     await connectDb();
 
@@ -17,18 +15,24 @@ export async function POST(request:Request){
         return new Response("Unauthorized", { status: 401 });
     }
 
+
     const userId = user._id;
     const {acceptMessage} = await request.json()
 
     try {
+
         //find user with the userId and update the isAccepting message field
-        const updatedUser = await UserModel.findByIdAndUpdate(userId,{isAcceptMessage:acceptMessage},{new:true})
+        const updatedUser = await UserModel.findByIdAndUpdate(userId,{isAcceptingMessage:acceptMessage},{new:true})
+
 
         if(!updatedUser){
             return Response.json({success:false,message:"User not found for updating the isAcceptingMessage field"},{status:404})
         }
 
-        return Response.json({success:true,message:"isAcceptingMessage updated"},{status:200})
+        return Response.json({
+            success:true,
+            message:"isAcceptingMessage updated"
+        },{status:200})
         
     } catch (error) {
         console.log("error in accept message",error)
@@ -49,11 +53,10 @@ export async function GET(request:Request){
         return new Response("Unauthorized", { status: 401 });
     }
 
-    const userId = user._id;
-
+    const userId = new mongoose.Types.ObjectId(user._id);
     try {
         //find user with the userId and update the isAccepting message field
-        const getUser = await UserModel.findOne({userId})
+        const getUser = await UserModel.findById(userId)
 
         if(!getUser){
             return Response.json({success:false,message:"User not found"},{status:404})
@@ -61,7 +64,7 @@ export async function GET(request:Request){
 
         return Response.json({
             success:true,
-            isAcceptingMessage:getUser.isAcceptMessage
+            isAcceptingMessage:getUser.isAcceptingMessage
         },{status:200})
         
     } catch (error) {

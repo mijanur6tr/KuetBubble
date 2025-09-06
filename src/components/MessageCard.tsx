@@ -1,9 +1,13 @@
 "use client"
 
-import React from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from './ui/button'
 import { X } from 'lucide-react'
+import axios from 'axios'
+import dayjs from "dayjs";
+import { toast } from 'react-toastify'
+import { ApiResponse } from '@/types/ApiResponse'
 
 
 import {
@@ -28,17 +32,43 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Message } from '@/models/User.models'
 
 
-export default function messageCard() {
+
+interface messageCardProps{
+    message:Message;
+    onMessageDelete:(messageId:string)=>void;
+}
+
+
+
+export default function MessageCard({message,onMessageDelete}:messageCardProps) {
+
+    const handleDeleteConfirm = async () =>{
+        try {
+            const response = await axios.delete<ApiResponse>(`/api/message-delete/${message._id}`)
+            toast(response.data.message)
+            onMessageDelete(message._id)
+        } catch (error) {
+            console.log(error)
+            toast.error("something went wrong")
+        }
+    }
+
     return (
         <Card className='card-bordered'>
             <CardHeader>
                 <div className='flex justify-between items-center'>
-                    <CardTitle>Card Title</CardTitle>
+                    <CardTitle>{message.content}</CardTitle>
                     <AlertDialog>
-                        <Button variant={'destructive'}><X className="w-5 h-5" /></Button>
-                        <AlertDialogTrigger>Open</AlertDialogTrigger>
+
+                        <AlertDialogTrigger>
+                            <Button variant={'destructive'}>
+                            <X className="w-5 h-5" />
+                        </Button>
+                        </AlertDialogTrigger>
+
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -48,14 +78,16 @@ export default function messageCard() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction>Continue</AlertDialogAction>
+                                <AlertDialogAction onClick={handleDeleteConfirm}>Continue</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
                 </div>
+                <div>
+                    {dayjs(message.createdAt).format('MMM D, YYYY h:mm A')}
+                </div>
             </CardHeader>
             <CardContent>
-                <p>Card Content</p>
             </CardContent>
         </Card>
     )

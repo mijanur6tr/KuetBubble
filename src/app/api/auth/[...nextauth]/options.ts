@@ -3,7 +3,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import UserModel from "@/models/User.models";
 import connectDb from "@/lib/dbConnect";
 import bcrypt from 'bcrypt';
-import { jwt } from "zod";
 
 
 export const authOptions:NextAuthOptions = {
@@ -36,7 +35,7 @@ providers: [
                 throw new Error("User is not verified. Verify your id before logging in")
             }
     
-            const isPasswordMatch = bcrypt.compare(user.password,credentials.password)
+            const isPasswordMatch = await bcrypt.compare(credentials.password,user.password)
     
             if(!isPasswordMatch){
                 throw new Error("Invalid credential.")
@@ -56,7 +55,7 @@ providers: [
 callbacks: {
     async jwt({ token, user}) {
         if(user){
-            token._id= user._id.toString(),
+            token._id= user._id?.toString(),
             token.isVerified= user.isVerified,
             token.isAcceptingMessage= user.isAcceptingMessage,
             token.username= user.username
@@ -65,16 +64,16 @@ callbacks: {
     },
     async session({ session, token }) {
         if(token){
-            session._id = token._id,
-            session.isVerified = token.isVerified,
-            session.isAcceptingMessage = token.isAcceptingMessage,
-            session.username = token.username
+            session.user._id = token._id,
+            session.user.isVerified = token.isVerified,
+            session.user.isAcceptingMessage = token.isAcceptingMessage,
+            session.user.username = token.username
         }
         return session
         },
 },
 
-secret:process.env.NEXT_AUTH_SECRET,
+secret:process.env.NEXTAUTH_SECRET,
 
 session:{
     strategy:"jwt",

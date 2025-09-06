@@ -8,7 +8,7 @@ declare module "next-auth"{
         _id?:string,
         isVerified?:Boolean,
         isAcceptingMessage?:Boolean,
-        username?:string}& DefaultSession["user"]
+        username?:string} & DefaultSession["user"]
     } 
     interface User {
         _id?:string,
