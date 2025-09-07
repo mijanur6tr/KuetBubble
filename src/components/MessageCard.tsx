@@ -64,9 +64,9 @@ export default function MessageCard({message,onMessageDelete}:messageCardProps) 
                     <AlertDialog>
 
                         <AlertDialogTrigger>
-                            <Button variant={'destructive'}>
+                          
                             <X className="w-5 h-5" />
-                        </Button>
+                        
                         </AlertDialogTrigger>
 
                         <AlertDialogContent>

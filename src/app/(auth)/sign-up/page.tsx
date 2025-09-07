@@ -8,36 +8,32 @@ import Link from 'next/link';
 import * as z from 'zod';
 import { Loader2 } from 'lucide-react';
 import { useDebounceValue } from 'usehooks-ts';
-import axios, { AxiosError } from "axios"
-import {toast} from "react-toastify"
-
+import axios, { AxiosError } from "axios";
+import { toast } from "react-toastify";
 
 import {
-    useFormField,
     Form,
     FormItem,
     FormLabel,
     FormControl,
-    FormDescription,
     FormMessage,
     FormField,
-} from '@/components/ui/form'
+} from '@/components/ui/form';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 import { signUpSchema } from '@/schemas/signUpSchema';
 import { useRouter } from 'next/navigation';
 
 
-export default function SingUp() {
 
+export default function SignUp() {
     const router = useRouter();
-    const [username, setUsername] = useState("")
-    const [usernameMessage, setUsernameMessage] = useState("")
-    const [isCheckingUsername, setIsCheckingUsername] = useState(false)
-    const [isSubmiting, setIsSubmiting] = useState(false)
-    const [debouncedUsername, setDebouncedUsername] = useDebounceValue(username, 300);
-
+    const [username, setUsername] = useState("");
+    const [usernameMessage, setUsernameMessage] = useState("");
+    const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+    const [isSubmiting, setIsSubmiting] = useState(false);
+    const [debouncedUsername] = useDebounceValue(username, 300);
 
     const form = useForm<z.infer<typeof signUpSchema>>({
         resolver: zodResolver(signUpSchema),
@@ -46,57 +42,50 @@ export default function SingUp() {
             email: "",
             password: ""
         }
-    })
+    });
+
     useEffect(() => {
         const checkUsername = async () => {
             if (!debouncedUsername) return;
-
             setIsCheckingUsername(true);
             setUsernameMessage('');
-
             try {
-                const response = await axios.get<ApiResponse>(
-                    `/api/username-unique?username=${debouncedUsername}`
-                );
+                const response = await axios.get<ApiResponse>(`/api/username-unique?username=${debouncedUsername}`);
                 setUsernameMessage(response.data.message);
             } catch (error) {
                 const axiosError = error as AxiosError<ApiResponse>;
-                setUsernameMessage(
-                    axiosError.response?.data.message ?? 'Error checking username'
-                );
+                setUsernameMessage(axiosError.response?.data.message ?? 'Error checking username');
             } finally {
                 setIsCheckingUsername(false);
             }
         };
-
         checkUsername();
     }, [debouncedUsername]);
 
-    const Submit =async (data: z.infer<typeof signUpSchema>) => {
+    const Submit = async (data: z.infer<typeof signUpSchema>) => {
         setIsSubmiting(true);
         try {
-            const response =await axios.post<ApiResponse>("/api/sign-up", data)
-            if(response.data.success){
-                toast.success("Registered Successfully! Verification code sent to your email")
-               router.replace(`/verify/${data.username}`) 
-            }else{
-                console.log(response.data.message)
-                toast.error(response.data.message)
+            const response = await axios.post<ApiResponse>("/api/sign-up", data);
+            if (response.data.success) {
+                toast.success("Registered Successfully! Verification code sent to your email");
+                router.replace(`/verify/${data.username}`);
+            } else {
+                toast.error(response.data.message);
             }
-            
-            setIsSubmiting(false);
         } catch (error) {
-  const axiosError = error as AxiosError<ApiResponse>;
-  toast.error(axiosError.response?.data.message ?? "Failed to register");
-  setIsSubmiting(false);
-}
-
-    }
-
+            const axiosError = error as AxiosError<ApiResponse>;
+            toast.error(axiosError.response?.data.message ?? "Failed to register");
+        } finally {
+            setIsSubmiting(false);
+        }
+    };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-800">
-            <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
+        <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50">
+            <div className="relative w-full max-w-md mx-2 p-8 space-y-8 bg-white rounded-lg shadow-md">
+
+               
+
                 <div className="text-center">
                     <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
                         Join KUET Bubble
@@ -104,67 +93,66 @@ export default function SingUp() {
                     <p className="mb-4">Sign up to start your anonymous adventure</p>
                 </div>
 
-                <Form {...form} >
+                <Form {...form}>
                     <form onSubmit={form.handleSubmit(Submit)} className='space-y-6'>
-                   <FormField
-  name="username"
-  control={form.control}
-  render={({ field, fieldState }) => (
-    <FormItem>
-      <FormLabel>Username</FormLabel>
-      <Input
-        {...field}
-        onChange={(e) => {
-          field.onChange(e);
-          setUsername(e.target.value);
-        }}
-      />
-      <div className="flex items-center gap-2 mt-1">
-        {fieldState.error ? (
-          <p className="text-red-500 text-sm">{fieldState.error.message}</p>
-        ) : isCheckingUsername ? (
-          <Loader2 className="animate-spin" />
-        ) : (
-          usernameMessage && (
-            <p className={`text-sm ${usernameMessage === "Username is unique" ? "text-green-500" : "text-red-500"}`}>
-              {usernameMessage}
-            </p>
-          )
-        )}
-      </div>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
-
+                        <FormField
+                            name="username"
+                            control={form.control}
+                            render={({ field, fieldState }) => (
+                                <FormItem>
+                                    <FormLabel>Username</FormLabel>
+                                    <Input
+                                        {...field}
+                                        onChange={(e) => {
+                                            field.onChange(e);
+                                            setUsername(e.target.value);
+                                        }}
+                                    />
+                                    <div className="flex items-center gap-2 mt-1">
+                                        {fieldState.error ? (
+                                            <p className="text-red-500 text-sm">{fieldState.error.message}</p>
+                                        ) : isCheckingUsername ? (
+                                            <Loader2 className="animate-spin" />
+                                        ) : (
+                                            usernameMessage && (
+                                                <p className={`text-sm ${usernameMessage === "Username is unique" ? "text-green-500" : "text-red-500"}`}>
+                                                    {usernameMessage}
+                                                </p>
+                                            )
+                                        )}
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
                         <FormField
                             name='email'
                             control={form.control}
-                            render={
-                                ({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className='mt-2'>Email</FormLabel>
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
                                         <Input {...field} type="email" />
-                                        <p className=' text-gray-400 mb-2 text-sm'>We will send you a verification code</p>
-                                        <FormMessage />
-                                    </FormItem>
-                                )
-                            }
+                                    </FormControl>
+                                    <p className='text-gray-400 mb-2 text-sm'>We will send you a verification code</p>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
 
                         <FormField
                             name='password'
                             control={form.control}
-                            render={
-                                ({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Password</FormLabel>
+                                    <FormControl>
                                         <Input {...field} type='password' />
-                                        <FormMessage />
-                                    </FormItem>
-                                )
-                            }
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
 
                         <Button type='submit' className='w-full mt-2' disabled={isSubmiting} >
@@ -177,8 +165,6 @@ export default function SingUp() {
                                 'Sign Up'
                             )}
                         </Button>
-
-
                     </form>
                 </Form>
 
@@ -190,7 +176,6 @@ export default function SingUp() {
                         </Link>
                     </p>
                 </div>
-
             </div>
         </div>
     )
