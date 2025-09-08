@@ -4,6 +4,10 @@ import UserModel from "@/models/User.models";
 import connectDb from "@/lib/dbConnect";
 import bcrypt from 'bcrypt';
 
+interface Credentials {
+  identifier: string;
+  password: string;
+}
 
 export const authOptions:NextAuthOptions = {
 
@@ -16,7 +20,7 @@ providers: [
       email: { label: "Email", type: "text", },
       password: { label: "Password", type: "password" }
     },
-    async authorize(credentials:any):Promise<any> {
+    async authorize(credentials:Credentials):Promise<any> {
         await connectDb()
 
         try {

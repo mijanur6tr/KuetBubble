@@ -1,8 +1,5 @@
 "use client"
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Button } from './ui/button'
 import { X } from 'lucide-react'
 import axios from 'axios'
 import dayjs from "dayjs";
@@ -12,10 +9,7 @@ import { ApiResponse } from '@/types/ApiResponse'
 
 import {
     Card,
-    CardAction,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
