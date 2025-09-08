@@ -35,7 +35,7 @@ export default function Home() {
 
       {/* Carousel */}
       <Carousel
-        plugins={[Autoplay({ delay: 2500 })]}
+        plugins={[Autoplay({ delay: 2800 })]}
         className="w-full  max-w-4xl"
       >
         <CarouselContent>
@@ -65,7 +65,7 @@ export default function Home() {
         <p className="mb-3 font-medium text-gray-200">Get your own message board!</p>
         <Link href={'/sign-up'}>
           <button className="bg-purple-500 hover:bg-purple-400 text-white font-bold px-6 py-2 rounded-lg shadow-md">
-            Get Messages
+            Get Started
           </button>
         </Link>
       </div>

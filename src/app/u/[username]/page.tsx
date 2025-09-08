@@ -13,9 +13,22 @@ import * as z from "zod"
 import { messageSchema } from "@/schemas/messageSchema"
 import { ApiResponse } from "@/types/ApiResponse"
 import { toast } from "react-toastify"
+import { metadata } from "@/app/layout"
+import { 
+   useFormField,
+  Form,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+  FormField,
+ } from "@/components/ui/form"
+ import { useParams } from "next/navigation"
+
 
 const specialChar = "||"
-const initialMessageString = "What's your favourite place at KUET?||Do you have any pets?||What's your dream job?"
+const initialMessageString = "If KUET had a Hogwarts house system, which hall would be Gryffindor? 😂||একজন crush এর কারণে library regular হওয়া কি সত্যি myth নাকি fact? 👀||  What's the most creative way you've ever avoided a KUET assignment deadline?  🤫 "
 const parseStringMessages = (messageString: string): string[] => messageString.split(specialChar)
 
 export default function SendMessage() {
@@ -23,6 +36,9 @@ export default function SendMessage() {
   const [isSuggestLoad, setIsSuggestLoad] = useState(false)
   const [suggestError, setSuggestError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+
+  const params= useParams<{username:string}>()
+  const username = params.username
 
   const form = useForm<z.infer<typeof messageSchema>>({ resolver: zodResolver(messageSchema) })
   const messageContent = form.watch("content")
@@ -36,10 +52,13 @@ export default function SendMessage() {
       if (result.data.success) {
         toast.success("Message sent")
         form.reset({ ...form.getValues(), content: '' })
+      }else{
+        console.log(result.data.message)
+        toast.error(result.data.message)
       }
     } catch (error) {
       console.error(error)
-      toast.error("Error sending message")
+      toast.error(error?.response.data.message)
     } finally { setIsLoading(false) }
   }
 
@@ -59,22 +78,42 @@ export default function SendMessage() {
     <div className="w-full max-w-4xl mx-auto my-5 p-6 md:p-10 bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 rounded-2xl shadow-lg">
       <h1 className="text-4xl md:text-5xl font-extrabold mb-8 text-center text-purple-700">Send a Message</h1>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Textarea
-          {...form.register("content")}
-          placeholder="Write your message here..."
-          className="w-full min-h-[80px] p-4 border-2 border-purple-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-300 rounded-lg resize-none text-gray-700 placeholder:text-gray-400"
-        />
-        <div className="flex justify-center">
-          <Button type="submit" disabled={isLoading || !messageContent} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg flex items-center gap-2">
-            {isLoading && <Loader2 className="h-5 w-5 animate-spin" />}
-            {isLoading ? "Sending..." : "Send Message"}
-          </Button>
-        </div>
-      </form>
+     <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Send Anonymous Message to @{username}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Write your anonymous message here"
+                    className="resize-none"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex justify-center">
+            {isLoading ? (
+              <Button disabled>
+                <Loader2 className=" mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </Button>
+            ) : (
+              <Button className="bg-purple-500 hover:bg-purple-600"  type="submit" disabled={isLoading || !messageContent}>
+                Send It
+              </Button>
+            )}
+          </div>
+        </form>
+      </Form>
 
       <div className="mt-10 space-y-6">
-        <Button onClick={fetchMessages} disabled={isSuggestLoad} className="bg-pink-500 hover:bg-pink-600 text-white px-5 py-2 rounded-lg w-full md:w-auto">
+        <Button onClick={fetchMessages} disabled={isSuggestLoad} className="bg-pink-500 hover:bg-pink-600 text-white px-5 py-2 rounded-lg w-full sm:w-auto">
           {isSuggestLoad && <Loader2 className="h-5 w-5 animate-spin" />}
           {isSuggestLoad ? "Loading..." : "Suggest Messages"}
         </Button>
@@ -86,8 +125,8 @@ export default function SendMessage() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             {suggestedMessages.map((msg, i) => (
-              <Button key={i} variant="outline" className="w-full text-left break-words py-3 px-4 rounded-lg border-purple-300 hover:bg-purple-100 text-gray-800" onClick={() => handleClick(msg)}>
-                {msg}
+              <Button key={i} variant="outline" className="w-full text-left break-words py-8 md:py-5 px-4 rounded-lg border-purple-300 hover:bg-purple-100 text-gray-800" onClick={() => handleClick(msg)}>
+                <p className="rounded-lg border-purple-300 hover:bg-purple-100 text-gray-800  text-wrap">{msg}</p>
               </Button>
             ))}
           </CardContent>
