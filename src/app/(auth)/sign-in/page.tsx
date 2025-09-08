@@ -79,7 +79,7 @@ export default function Signin() {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email or Username</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input type="text" {...field} />
                   </FormControl>
