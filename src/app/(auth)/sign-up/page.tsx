@@ -33,7 +33,7 @@ export default function SignUp() {
     const [usernameMessage, setUsernameMessage] = useState("");
     const [isCheckingUsername, setIsCheckingUsername] = useState(false);
     const [isSubmiting, setIsSubmiting] = useState(false);
-    const [debouncedUsername] = useDebounceValue(username, 300);
+    // const [debouncedUsername] = useDebounceValue(username, 300);
 
     const form = useForm<z.infer<typeof signUpSchema>>({
         resolver: zodResolver(signUpSchema),
@@ -44,23 +44,23 @@ export default function SignUp() {
         }
     });
 
-    useEffect(() => {
-        const checkUsername = async () => {
-            if (!debouncedUsername) return;
-            setIsCheckingUsername(true);
-            setUsernameMessage('');
-            try {
-                const response = await axios.get<ApiResponse>(`/api/username-unique?username=${debouncedUsername}`);
-                setUsernameMessage(response.data.message);
-            } catch (error) {
-                const axiosError = error as AxiosError<ApiResponse>;
-                setUsernameMessage(axiosError.response?.data.message ?? 'Error checking username');
-            } finally {
-                setIsCheckingUsername(false);
-            }
-        };
-        checkUsername();
-    }, [debouncedUsername]);
+    // useEffect(() => {
+    //     const checkUsername = async () => {
+    //         if (!debouncedUsername) return;
+    //         setIsCheckingUsername(true);
+    //         setUsernameMessage('');
+    //         try {
+    //             const response = await axios.get<ApiResponse>(`/api/username-unique?username=${debouncedUsername}`);
+    //             setUsernameMessage(response.data.message);
+    //         } catch (error) {
+    //             const axiosError = error as AxiosError<ApiResponse>;
+    //             setUsernameMessage(axiosError.response?.data.message ?? 'Error checking username');
+    //         } finally {
+    //             setIsCheckingUsername(false);
+    //         }
+    //     };
+    //     checkUsername();
+    // }, [debouncedUsername]);
 
     const Submit = async (data: z.infer<typeof signUpSchema>) => {
         setIsSubmiting(true);
@@ -68,7 +68,9 @@ export default function SignUp() {
             const response = await axios.post<ApiResponse>("/api/sign-up", data);
             if (response.data.success) {
                 toast.success("Registered Successfully! Verification code sent to your email");
-                router.replace(`/verify/${data.username}`);
+                // router.replace(`/verify/${data.username}`);
+                //modified router
+                 router.replace(`/sign-in`);
             } else {
                 toast.error(response.data.message);
             }
@@ -108,7 +110,7 @@ export default function SignUp() {
                                             setUsername(e.target.value);
                                         }}
                                     />
-                                    <div className="flex items-center gap-2 mt-1">
+                                    {/* <div className="flex items-center gap-2 mt-1">
                                         {fieldState.error ? (
                                             <p className="text-red-500 text-sm">{fieldState.error.message}</p>
                                         ) : isCheckingUsername ? (
@@ -120,7 +122,7 @@ export default function SignUp() {
                                                 </p>
                                             )
                                         )}
-                                    </div>
+                                    </div> */}
                                     <FormMessage />
                                 </FormItem>
                             )}

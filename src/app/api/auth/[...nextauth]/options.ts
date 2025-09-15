@@ -35,9 +35,9 @@ providers: [
                 throw new Error("User does not exist with this email or userid")
             }
     
-            if(!user.isVerified){
-                throw new Error("User is not verified. Verify your id before logging in")
-            }
+            // if(!user.isVerified){
+            //     throw new Error("User is not verified. Verify your id before logging in")
+            // }
     
             const isPasswordMatch = await bcrypt.compare(credentials.password,user.password)
     
