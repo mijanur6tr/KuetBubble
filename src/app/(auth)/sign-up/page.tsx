@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react';
 import { useDebounceValue } from 'usehooks-ts';
 import axios, { AxiosError } from "axios";
 import { toast } from "react-toastify";
+import { signIn } from 'next-auth/react';
 
 import {
     Form,
@@ -67,10 +68,28 @@ export default function SignUp() {
         try {
             const response = await axios.post<ApiResponse>("/api/sign-up", data);
             if (response.data.success) {
-                toast.success("Registered Successfully! Verification code sent to your email");
+                toast.success("Registered Successfully!");
                 // router.replace(`/verify/${data.username}`);
                 //modified router
-                 router.replace(`/sign-in`);
+                //  router.replace(`/dashboard`);
+
+                  const result = await signIn("credentials", {
+        redirect: false,
+        identifier: data.email,
+        password: data.password
+      })
+
+      if (result?.error) {
+        if (result.error === "CredentialsSignin") {
+          toast.error("Sign in failed")
+        } else {
+          toast.error("Something went wrong")
+        }
+      }
+
+      if (result?.url) {
+        router.replace("/dashboard")
+      }
             } else {
                 toast.error(response.data.message);
             }
